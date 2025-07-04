@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  jira-mcp-server:
+    build: .
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - NODE_ENV=production
+      - TRANSPORT_MODE=sse
+      - JWT_SECRET=${JWT_SECRET:-your-super-secret-jwt-key-change-this}
+      - API_KEY_HEADER=x-jira-api-token
+      - USER_ID_HEADER=x-user-id
+      - JIRA_URL_HEADER=x-jira-url
+      - SESSION_TIMEOUT=3600000
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge
